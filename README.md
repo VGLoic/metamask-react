@@ -1,2 +1,1 @@
-# React MetaMask
-
+# MetaMask React
