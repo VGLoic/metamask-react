@@ -4,6 +4,10 @@
   "description": "A simple Context provider and consumer hook in order to provide a simple API for interacting with MetaMask in the browser",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://https://github.com/VGLoic/metamask-react.git"
+  },
   "scripts": {
     "build": "tsc",
     "lint": "eslint src",
