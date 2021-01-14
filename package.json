@@ -6,7 +6,7 @@
   "types": "lib/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://https://github.com/VGLoic/metamask-react.git"
+    "url": "git+https://github.com/VGLoic/metamask-react.git"
   },
   "bugs": {
     "url": "https://github.com/VGLoic/metamask-react/issues"
