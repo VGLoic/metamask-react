@@ -40,6 +40,7 @@ describe("MetaMask provider", () => {
     const on = jest.fn();
     const removeListener = jest.fn();
     const ethereum = {
+      chainId: "0x1",
       isMetaMask: true,
       _metamask: {
         isUnlocked,
@@ -53,8 +54,36 @@ describe("MetaMask provider", () => {
       (window as any).ethereum = ethereum;
     });
 
+    test("when chain changes, it should reflect on the state", async () => {
+      isUnlocked.mockResolvedValue(true);
+      request.mockResolvedValue([]);
+
+      const otherChainId = "0x2";
+
+      const { promise, resolve } = deferred();
+
+      on.mockImplementation((key, callback) => {
+        if (key === "chainChanged") {
+          promise.then(callback);
+        }
+      });
+
+      const { result, waitForNextUpdate } = renderHook(useMetaMask, {
+        wrapper: MetaMaskProvider,
+      });
+
+      await waitForNextUpdate();
+
+      expect(result.current.chainId).toEqual("0x1");
+
+      resolve(otherChainId);
+      await waitForNextUpdate();
+
+      expect(result.current.chainId).toEqual(otherChainId);
+    });
+
     describe("when MetaMask is not enabled", () => {
-      test("when MetaMask is unlocked but no account is enabled, it should end up in the unlocked status", async () => {
+      test("when MetaMask is unlocked but no account is enabled, it should end up in the unabled status", async () => {
         isUnlocked.mockResolvedValue(true);
         request.mockResolvedValue([]);
 
@@ -63,6 +92,7 @@ describe("MetaMask provider", () => {
         });
 
         expect(result.current.status).toEqual("initializing");
+        expect(result.current.chainId).toEqual("0x1");
 
         await waitForNextUpdate();
 
@@ -152,7 +182,11 @@ describe("MetaMask provider", () => {
 
         const { promise, resolve } = deferred();
 
-        on.mockImplementation((_, callback) => promise.then(callback));
+        on.mockImplementation((key, callback) => {
+          if (key === "accountsChanged") {
+            promise.then(callback);
+          }
+        });
 
         const { result, waitForNextUpdate } = renderHook(useMetaMask, {
           wrapper: MetaMaskProvider,
@@ -175,7 +209,11 @@ describe("MetaMask provider", () => {
 
         const { promise, resolve } = deferred();
 
-        on.mockImplementation((_, callback) => promise.then(callback));
+        on.mockImplementation((key, callback) => {
+          if (key === "accountsChanged") {
+            promise.then(callback);
+          }
+        });
 
         const { result, waitForNextUpdate } = renderHook(useMetaMask, {
           wrapper: MetaMaskProvider,

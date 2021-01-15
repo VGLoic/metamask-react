@@ -1,6 +1,6 @@
 import * as React from "react";
 import {
-  IMetamaskContext,
+  IMetaMaskContext,
   MetamaskContext,
   MetaMaskState,
 } from "./metamask-context";
@@ -41,6 +41,16 @@ function subsribeToAccountsChanged(dispatch: (action: Action) => void) {
   };
 }
 
+function subscribeToChainChanged(dispatch: (action: Action) => void) {
+  const ethereum = (window as WindowInstanceWithEthereum).ethereum;
+  const onChainChanged = (chainId: string) =>
+    dispatch({ type: "metaMaskChainChanged", payload: chainId });
+  ethereum.on("chainChanged", onChainChanged);
+  return () => {
+    ethereum.removeListener("chainChanged", onChainChanged);
+  };
+}
+
 async function requestAccounts(
   dispatch: (action: Action) => void
 ): Promise<string[]> {
@@ -64,11 +74,13 @@ function deriveInitialState(): MetaMaskState {
   if (isMetaMaskAvailable) {
     return {
       account: null,
+      chainId: ethereum.chainId,
       status: "initializing",
     };
   }
   return {
     account: null,
+    chainId: null,
     status: "unavailable",
   };
 }
@@ -95,6 +107,12 @@ export function MetaMaskProvider(props: any) {
     return unsubscribe;
   }, [dispatch, status]);
 
+  React.useEffect(() => {
+    if (status === "unavailable") return () => {};
+    const unsubscribe = subscribeToChainChanged(dispatch);
+    return unsubscribe;
+  }, [dispatch, status]);
+
   const enable = React.useCallback(() => {
     if (status === "unavailable") {
       console.warn(
@@ -105,7 +123,7 @@ export function MetaMaskProvider(props: any) {
     return requestAccounts(dispatch);
   }, [dispatch, status]);
 
-  const value: IMetamaskContext = React.useMemo(
+  const value: IMetaMaskContext = React.useMemo(
     () => ({
       ...state,
       enable,

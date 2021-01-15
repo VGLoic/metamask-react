@@ -2,14 +2,15 @@ import * as React from "react";
 
 export interface MetaMaskState {
   account: null | string;
+  chainId: string | null;
   status: "initializing" | "unavailable" | "unabled" | "enabled" | "connecting";
 }
 
-export interface IMetamaskContext extends MetaMaskState {
+export interface IMetaMaskContext extends MetaMaskState {
   enable: () => Promise<string[] | null>;
   ethereum: any;
 }
 
 export const MetamaskContext = React.createContext<
-  IMetamaskContext | undefined
+  IMetaMaskContext | undefined
 >(undefined);
