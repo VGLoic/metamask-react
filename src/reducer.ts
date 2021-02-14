@@ -1,13 +1,22 @@
 import { MetaMaskState } from "./metamask-context";
 interface MetaMaskLocked {
   type: "metaMaskLocked";
+  payload: {
+    chainId: string;
+  };
 }
 interface MetaMaskUnlocked {
   type: "metaMaskUnlocked";
+  payload: {
+    chainId: string;
+  };
 }
 interface MetaMaskEnabled {
   type: "metaMaskEnabled";
-  payload: string[];
+  payload: {
+    accounts: string[];
+    chainId?: string;
+  };
 }
 interface MetaMaskConnecting {
   type: "metaMaskConnecting";
@@ -38,19 +47,22 @@ export function reducer(state: MetaMaskState, action: Action): MetaMaskState {
     case "metaMaskLocked":
       return {
         ...state,
+        chainId: action.payload.chainId,
         account: null,
         status: "unabled",
       };
     case "metaMaskUnlocked":
       return {
         ...state,
+        chainId: action.payload.chainId,
         account: null,
         status: "unabled",
       };
     case "metaMaskEnabled":
-      const unlockedAccounts = action.payload;
+      const unlockedAccounts = action.payload.accounts;
       return {
         ...state,
+        chainId: action.payload.chainId || state.chainId,
         account: unlockedAccounts[0],
         status: "enabled",
       };

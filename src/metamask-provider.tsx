@@ -13,10 +13,14 @@ type WindowInstanceWithEthereum = Window &
 async function synchronize(dispatch: (action: Action) => void) {
   const ethereum = (window as WindowInstanceWithEthereum).ethereum;
 
+  const chainId: string = await ethereum.request({
+    method: "eth_chainId",
+  });
+
   const isUnlocked = await ethereum._metamask.isUnlocked();
 
   if (!isUnlocked) {
-    dispatch({ type: "metaMaskLocked" });
+    dispatch({ type: "metaMaskLocked", payload: { chainId } });
     return;
   }
 
@@ -25,9 +29,12 @@ async function synchronize(dispatch: (action: Action) => void) {
   });
 
   if (accessibleAccounts.length === 0) {
-    dispatch({ type: "metaMaskUnlocked" });
+    dispatch({ type: "metaMaskUnlocked", payload: { chainId } });
   } else {
-    dispatch({ type: "metaMaskEnabled", payload: accessibleAccounts });
+    dispatch({
+      type: "metaMaskEnabled",
+      payload: { accounts: accessibleAccounts, chainId },
+    });
   }
 }
 
@@ -58,8 +65,10 @@ async function requestAccounts(
 
   dispatch({ type: "metaMaskConnecting" });
   try {
-    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-    dispatch({ type: "metaMaskEnabled", payload: accounts });
+    const accounts: string[] = await ethereum.request({
+      method: "eth_requestAccounts",
+    });
+    dispatch({ type: "metaMaskEnabled", payload: { accounts } });
     return accounts;
   } catch (err) {
     dispatch({ type: "metaMaskPermissionRejected" });
@@ -71,17 +80,10 @@ function deriveInitialState(): MetaMaskState {
   const ethereum = (window as WindowInstanceWithEthereum).ethereum;
   const isMetaMaskAvailable = Boolean(ethereum) && ethereum.isMetaMask;
 
-  if (isMetaMaskAvailable) {
-    return {
-      account: null,
-      chainId: ethereum.chainId,
-      status: "initializing",
-    };
-  }
   return {
     account: null,
     chainId: null,
-    status: "unavailable",
+    status: isMetaMaskAvailable ? "initializing" : "unavailable",
   };
 }
 
@@ -101,27 +103,29 @@ export function MetaMaskProvider(props: any) {
     }
   }, [dispatch, status]);
 
+  const isEnabled = status === "enabled";
   React.useEffect(() => {
-    if (status !== "enabled") return () => {};
+    if (!isEnabled) return () => {};
     const unsubscribe = subsribeToAccountsChanged(dispatch);
     return unsubscribe;
-  }, [dispatch, status]);
+  }, [dispatch, isEnabled]);
 
+  const isUnavailable = status === "unavailable";
   React.useEffect(() => {
-    if (status === "unavailable") return () => {};
+    if (isUnavailable) return () => {};
     const unsubscribe = subscribeToChainChanged(dispatch);
     return unsubscribe;
-  }, [dispatch, status]);
+  }, [dispatch, isUnavailable]);
 
   const enable = React.useCallback(() => {
-    if (status === "unavailable") {
+    if (isUnavailable) {
       console.warn(
         "`enable` method has been called while MetaMask is not available. Nothing will be done in this case."
       );
       return Promise.resolve([]);
     }
     return requestAccounts(dispatch);
-  }, [dispatch, status]);
+  }, [dispatch, isUnavailable]);
 
   const value: IMetaMaskContext = React.useMemo(
     () => ({
