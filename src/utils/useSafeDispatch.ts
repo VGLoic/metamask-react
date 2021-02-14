@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 
 export function useSafeDispatch<T>(dispatch: React.Dispatch<T>) {
   const mountedRef = React.useRef(false);
