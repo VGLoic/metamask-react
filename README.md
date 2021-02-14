@@ -34,17 +34,17 @@ In any React child of the provider, one can use the `useMetaMask` hook in order 
 // app.js
 
 function App() {
-    const { status, enable, account } = useMetaMask();
+    const { status, connect, account } = useMetaMask();
 
     if (status === "unavailable") return <div>MetaMask not available :(</div>
 
     if (status === "initializing") return <div>Synchronisation with MetaMask ongoing...</div>
 
-    if (status === "unabled") return <button onClick={enable}>Connect to MetaMask</button>
+    if (status === "notConnected") return <button onClick={connect}>Connect to MetaMask</button>
 
     if (status === "connecting") return <div>Connecting...</div>
 
-    if (status === "enabled") return <div>Connected account: {account}</div>
+    if (status === "connected") return <div>Connected account: {account}</div>
 
     return null;
 }
@@ -62,8 +62,8 @@ In case of no accounts connected, the status will be `unabled`, otherwise the st
 
 Here is an abstract on the different statuses:
 - `unavailable`: MetaMask is not available, nothing will be done
-- `initializing`: the provider is currently synchronizing with MetaMask
-- `unabled`: MetaMask is available but not connected to the application
-- `enabled`: MetaMask is connected to the application
+- `initializing`: the provider is currently initializing by synchronizing with MetaMask
+- `notConnected`: MetaMask is available but not connected to the application
+- `connected`: MetaMask is connected to the application
 - `connecting`: the connection of your accounts to the application is ongoing
 

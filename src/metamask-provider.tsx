@@ -1,8 +1,8 @@
 import * as React from "react";
 import {
   IMetaMaskContext,
-  MetamaskContext,
   MetaMaskState,
+  MetamaskContext,
 } from "./metamask-context";
 import { Action, reducer } from "./reducer";
 import { useSafeDispatch } from "./utils/useSafeDispatch";
@@ -32,7 +32,7 @@ async function synchronize(dispatch: (action: Action) => void) {
     dispatch({ type: "metaMaskUnlocked", payload: { chainId } });
   } else {
     dispatch({
-      type: "metaMaskEnabled",
+      type: "metaMaskConnected",
       payload: { accounts: accessibleAccounts, chainId },
     });
   }
@@ -68,7 +68,7 @@ async function requestAccounts(
     const accounts: string[] = await ethereum.request({
       method: "eth_requestAccounts",
     });
-    dispatch({ type: "metaMaskEnabled", payload: { accounts } });
+    dispatch({ type: "metaMaskConnected", payload: { accounts } });
     return accounts;
   } catch (err) {
     dispatch({ type: "metaMaskPermissionRejected" });
@@ -81,9 +81,9 @@ function deriveInitialState(): MetaMaskState {
   const isMetaMaskAvailable = Boolean(ethereum) && ethereum.isMetaMask;
 
   return {
+    status: isMetaMaskAvailable ? "initializing" : "unavailable",
     account: null,
     chainId: null,
-    status: isMetaMaskAvailable ? "initializing" : "unavailable",
   };
 }
 
@@ -103,12 +103,12 @@ export function MetaMaskProvider(props: any) {
     }
   }, [dispatch, status]);
 
-  const isEnabled = status === "enabled";
+  const isConnected = status === "connected";
   React.useEffect(() => {
-    if (!isEnabled) return () => {};
+    if (!isConnected) return () => {};
     const unsubscribe = subsribeToAccountsChanged(dispatch);
     return unsubscribe;
-  }, [dispatch, isEnabled]);
+  }, [dispatch, isConnected]);
 
   const isUnavailable = status === "unavailable";
   React.useEffect(() => {
@@ -117,7 +117,7 @@ export function MetaMaskProvider(props: any) {
     return unsubscribe;
   }, [dispatch, isUnavailable]);
 
-  const enable = React.useCallback(() => {
+  const connect = React.useCallback(() => {
     if (isUnavailable) {
       console.warn(
         "`enable` method has been called while MetaMask is not available. Nothing will be done in this case."
@@ -130,10 +130,10 @@ export function MetaMaskProvider(props: any) {
   const value: IMetaMaskContext = React.useMemo(
     () => ({
       ...state,
-      enable,
+      connect,
       ethereum: (window as WindowInstanceWithEthereum).ethereum,
     }),
-    [enable, state]
+    [connect, state]
   );
   return <MetamaskContext.Provider value={value} {...props} />;
 }

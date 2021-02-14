@@ -11,8 +11,8 @@ interface MetaMaskUnlocked {
     chainId: string;
   };
 }
-interface MetaMaskEnabled {
-  type: "metaMaskEnabled";
+interface MetaMaskConnected {
+  type: "metaMaskConnected";
   payload: {
     accounts: string[];
     chainId?: string;
@@ -36,7 +36,7 @@ interface ChainChanged {
 export type Action =
   | MetaMaskLocked
   | MetaMaskUnlocked
-  | MetaMaskEnabled
+  | MetaMaskConnected
   | MetaMaskConnecting
   | PermissionRejected
   | AccountsChanged
@@ -49,22 +49,21 @@ export function reducer(state: MetaMaskState, action: Action): MetaMaskState {
         ...state,
         chainId: action.payload.chainId,
         account: null,
-        status: "unabled",
+        status: "notConnected",
       };
     case "metaMaskUnlocked":
       return {
         ...state,
         chainId: action.payload.chainId,
         account: null,
-        status: "unabled",
+        status: "notConnected",
       };
-    case "metaMaskEnabled":
+    case "metaMaskConnected":
       const unlockedAccounts = action.payload.accounts;
       return {
-        ...state,
         chainId: action.payload.chainId || state.chainId,
         account: unlockedAccounts[0],
-        status: "enabled",
+        status: "connected",
       };
     case "metaMaskConnecting":
       return {
@@ -76,7 +75,7 @@ export function reducer(state: MetaMaskState, action: Action): MetaMaskState {
       return {
         ...state,
         account: null,
-        status: "unabled",
+        status: "notConnected",
       };
     case "metaMaskAccountsChanged":
       const accounts = action.payload;
@@ -84,7 +83,7 @@ export function reducer(state: MetaMaskState, action: Action): MetaMaskState {
         return {
           ...state,
           account: null,
-          status: "unabled",
+          status: "notConnected",
         };
       }
       return {

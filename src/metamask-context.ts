@@ -1,13 +1,17 @@
 import * as React from "react";
-
 export interface MetaMaskState {
   account: null | string;
-  chainId: string | null;
-  status: "initializing" | "unavailable" | "unabled" | "enabled" | "connecting";
+  chainId: null | string;
+  status:
+    | "initializing"
+    | "unavailable"
+    | "notConnected"
+    | "connected"
+    | "connecting";
 }
 
 export interface IMetaMaskContext extends MetaMaskState {
-  enable: () => Promise<string[] | null>;
+  connect: () => Promise<string[] | null>;
   ethereum: any;
 }
 

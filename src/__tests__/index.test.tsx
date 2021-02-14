@@ -14,19 +14,19 @@ describe("MetaMask provider", () => {
   const address = "0x19F7Fa0a30d5829acBD9B35bA2253a759a37EfC5";
 
   describe("when MetaMask is not available", () => {
-    test("when there is no `ethereum` object in the window, it should start in unavailable status", async () => {
+    test("when there is no `ethereum` object in the window, it should start in `unavailable` status", async () => {
       const { result } = renderHook(useMetaMask, { wrapper: MetaMaskProvider });
 
       expect(result.current.status).toEqual("unavailable");
     });
 
-    test("calling `enable` should return an empty array and warn the developer", async () => {
+    test("calling `connect` should return an empty array and warn the developer", async () => {
       const warn = jest.spyOn(console, "warn").mockImplementationOnce(() => {});
       const { result } = renderHook(useMetaMask, { wrapper: MetaMaskProvider });
 
       let accounts;
       await act(async () => {
-        accounts = await result.current.enable();
+        accounts = await result.current.connect();
       });
 
       expect(accounts).toEqual([]);
@@ -90,14 +90,14 @@ describe("MetaMask provider", () => {
       expect(result.current.chainId).toEqual(otherChainId);
     });
 
-    describe("when MetaMask is not enabled", () => {
+    describe("when MetaMask is not connected", () => {
       beforeEach(() => {
         isUnlocked.mockResolvedValue(true);
         fetchChainId.mockResolvedValue("0x1");
         fetchAccounts.mockResolvedValue([]);
       });
 
-      test("when MetaMask is unlocked but no account is enabled, it should end up in the unabled status", async () => {
+      test("when MetaMask is unlocked but no account is connected, it should end up in the `notConnected` status", async () => {
         const { result, waitForNextUpdate } = renderHook(useMetaMask, {
           wrapper: MetaMaskProvider,
         });
@@ -107,10 +107,10 @@ describe("MetaMask provider", () => {
         await waitForNextUpdate();
 
         expect(result.current.chainId).toEqual("0x1");
-        expect(result.current.status).toEqual("unabled");
+        expect(result.current.status).toEqual("notConnected");
       });
 
-      test("calling `enable` method should end in a successful connection", async () => {
+      test("calling `connect` method should end in a successful connection", async () => {
         requestAccounts.mockResolvedValue([address]);
 
         const { result, waitForNextUpdate } = renderHook(useMetaMask, {
@@ -121,21 +121,21 @@ describe("MetaMask provider", () => {
 
         await waitForNextUpdate();
 
-        expect(result.current.status).toEqual("unabled");
+        expect(result.current.status).toEqual("notConnected");
 
         act(() => {
-          result.current.enable();
+          result.current.connect();
         });
 
         expect(result.current.status).toEqual("connecting");
 
         await waitForNextUpdate();
 
-        expect(result.current.status).toEqual("enabled");
+        expect(result.current.status).toEqual("connected");
         expect(result.current.account).toEqual(address);
       });
 
-      test("calling `enable` method should end in the `unabled` status if the request fails", async () => {
+      test("calling `connect` method should end in the `notConnected` status if the request fails", async () => {
         const error = new Error("Test Error");
         requestAccounts.mockRejectedValue(error);
 
@@ -147,11 +147,11 @@ describe("MetaMask provider", () => {
 
         await waitForNextUpdate();
 
-        expect(result.current.status).toEqual("unabled");
+        expect(result.current.status).toEqual("notConnected");
 
         let thrownError;
         act(() => {
-          result.current.enable().catch((err) => (thrownError = err));
+          result.current.connect().catch((err) => (thrownError = err));
         });
 
         expect(result.current.status).toEqual("connecting");
@@ -160,19 +160,19 @@ describe("MetaMask provider", () => {
 
         expect(thrownError).toEqual(error);
 
-        expect(result.current.status).toEqual("unabled");
+        expect(result.current.status).toEqual("notConnected");
         expect(result.current.account).toEqual(null);
       });
     });
 
-    describe("when MetaMask is already enabled", () => {
+    describe("when MetaMask is already connected", () => {
       beforeEach(() => {
         isUnlocked.mockResolvedValue(true);
         fetchChainId.mockResolvedValue("0x1");
         fetchAccounts.mockResolvedValue([address]);
       });
 
-      test("synchronisation should successfully connect to the account", async () => {
+      test("initialization should successfully connect to the account", async () => {
         const { result, waitForNextUpdate } = renderHook(useMetaMask, {
           wrapper: MetaMaskProvider,
         });
@@ -181,7 +181,7 @@ describe("MetaMask provider", () => {
 
         await waitForNextUpdate();
 
-        expect(result.current.status).toEqual("enabled");
+        expect(result.current.status).toEqual("connected");
         expect(result.current.account).toEqual(address);
       });
 
@@ -211,11 +211,11 @@ describe("MetaMask provider", () => {
         resolve([otherAddress]);
         await waitForNextUpdate();
 
-        expect(result.current.status).toEqual("enabled");
+        expect(result.current.status).toEqual("connected");
         expect(result.current.account).toEqual(otherAddress);
       });
 
-      test("when account changes with empty account, it should lead to unabled status", async () => {
+      test("when account changes with empty account, it should lead to `notConnected` status", async () => {
         isUnlocked.mockResolvedValue(true);
         fetchChainId.mockResolvedValue("0x1");
         fetchAccounts.mockResolvedValue([address]);
@@ -239,7 +239,7 @@ describe("MetaMask provider", () => {
         resolve([]);
         await waitForNextUpdate();
 
-        expect(result.current.status).toEqual("unabled");
+        expect(result.current.status).toEqual("notConnected");
         expect(result.current.account).toEqual(null);
       });
     });
