@@ -128,9 +128,11 @@ export function MetaMaskProvider(props: any) {
     () => ({
       ...state,
       connect,
-      ethereum: (window as WindowInstanceWithEthereum).ethereum,
+      ethereum: isAvailable
+        ? (window as WindowInstanceWithEthereum).ethereum
+        : null,
     }),
-    [connect, state]
+    [connect, state, isAvailable]
   );
   return <MetamaskContext.Provider value={value} {...props} />;
 }
