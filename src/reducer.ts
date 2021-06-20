@@ -1,4 +1,7 @@
 import { MetaMaskState } from "./metamask-context";
+interface MetaMaskUnavailable {
+  type: "metaMaskUnavailable";
+}
 interface MetaMaskLocked {
   type: "metaMaskLocked";
   payload: {
@@ -34,6 +37,7 @@ interface ChainChanged {
 }
 
 export type Action =
+  | MetaMaskUnavailable
   | MetaMaskLocked
   | MetaMaskUnlocked
   | MetaMaskConnected
@@ -44,6 +48,12 @@ export type Action =
 
 export function reducer(state: MetaMaskState, action: Action): MetaMaskState {
   switch (action.type) {
+    case "metaMaskUnavailable":
+      return {
+        chainId: null,
+        account: null,
+        status: "unavailable",
+      };
     case "metaMaskLocked":
       return {
         ...state,
