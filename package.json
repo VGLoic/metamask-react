@@ -1,6 +1,6 @@
 {
   "name": "metamask-react",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A simple Context provider and consumer hook in order to provide a simple API for interacting with MetaMask in the browser",
   "keywords": [
     "react",
