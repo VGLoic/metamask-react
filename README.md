@@ -36,9 +36,9 @@ In any React child of the provider, one can use the `useMetaMask` hook in order 
 function App() {
     const { status, connect, account } = useMetaMask();
 
-    if (status === "unavailable") return <div>MetaMask not available :(</div>
-
     if (status === "initializing") return <div>Synchronisation with MetaMask ongoing...</div>
+
+    if (status === "unavailable") return <div>MetaMask not available :(</div>
 
     if (status === "notConnected") return <button onClick={connect}>Connect to MetaMask</button>
 
@@ -52,17 +52,17 @@ function App() {
 
 ## Statuses and behaviour
 
-The `MetaMaskProvider` will first derive its initial state based on the presence of correctly injected `ethereum` object.
+The `MetaMaskProvider` will first initialise the state with `initializing` status, the `account` and `chainId` will be `null`. A synchronization is performed in order to derive the MetaMask state.
 
-If the `ethereum` object is not present, the initial status will be `unavailable` and no synchronisation is made.
+If the `ethereum` object is not present or if it is the one associated to MetaMask, the synchronisation will change the status to `unavailable`.
 
-Otherwise, the initial status will be `initializing` and a synchronisation is made in order to check if MetaMask has already connected accounts for the application.
+Otherwise, a check is performed in order to detect if MetaMask has already connected accounts for the application.
 
-In case of no accounts connected, the status will be `unabled`, otherwise the status will be `enabled`.
+In case of no connected accounts, the status will be `unabled`, otherwise the status will be `enabled`.
 
 Here is an abstract on the different statuses:
-- `unavailable`: MetaMask is not available, nothing will be done
 - `initializing`: the provider is currently initializing by synchronizing with MetaMask
+- `unavailable`: MetaMask is not available, nothing will be done
 - `notConnected`: MetaMask is available but not connected to the application
 - `connected`: MetaMask is connected to the application
 - `connecting`: the connection of your accounts to the application is ongoing

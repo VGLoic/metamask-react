@@ -14,7 +14,7 @@ describe("MetaMask provider", () => {
   const address = "0x19F7Fa0a30d5829acBD9B35bA2253a759a37EfC5";
 
   describe("when MetaMask is not available", () => {
-    test("when there is no `ethereum` object in the window, it should start in `unavailable` status", async () => {
+    test("when there is no `ethereum` object in the window, it should synchronise into `unavailable` status", async () => {
       const { result } = renderHook(useMetaMask, { wrapper: MetaMaskProvider });
 
       expect(result.current.status).toEqual("unavailable");
@@ -62,15 +62,15 @@ describe("MetaMask provider", () => {
     });
 
     test("when chain changes, it should reflect on the state", async () => {
-      isUnlocked.mockResolvedValue(true);
-      fetchChainId.mockResolvedValue("0x1");
-      fetchAccounts.mockResolvedValue([]);
+      isUnlocked.mockResolvedValueOnce(true);
+      fetchChainId.mockResolvedValueOnce("0x1");
+      fetchAccounts.mockResolvedValueOnce([]);
 
       const otherChainId = "0x2";
 
       const { promise, resolve } = deferred();
 
-      on.mockImplementation((key, callback) => {
+      on.mockImplementationOnce((key, callback) => {
         if (key === "chainChanged") {
           promise.then(callback);
         }
@@ -92,9 +92,9 @@ describe("MetaMask provider", () => {
 
     describe("when MetaMask is not connected", () => {
       beforeEach(() => {
-        isUnlocked.mockResolvedValue(true);
-        fetchChainId.mockResolvedValue("0x1");
-        fetchAccounts.mockResolvedValue([]);
+        isUnlocked.mockResolvedValueOnce(true);
+        fetchChainId.mockResolvedValueOnce("0x1");
+        fetchAccounts.mockResolvedValueOnce([]);
       });
 
       test("when MetaMask is unlocked but no account is connected, it should end up in the `notConnected` status", async () => {
@@ -111,7 +111,7 @@ describe("MetaMask provider", () => {
       });
 
       test("calling `connect` method should end in a successful connection", async () => {
-        requestAccounts.mockResolvedValue([address]);
+        requestAccounts.mockResolvedValueOnce([address]);
 
         const { result, waitForNextUpdate } = renderHook(useMetaMask, {
           wrapper: MetaMaskProvider,
@@ -137,7 +137,7 @@ describe("MetaMask provider", () => {
 
       test("calling `connect` method should end in the `notConnected` status if the request fails", async () => {
         const error = new Error("Test Error");
-        requestAccounts.mockRejectedValue(error);
+        requestAccounts.mockRejectedValueOnce(error);
 
         const { result, waitForNextUpdate } = renderHook(useMetaMask, {
           wrapper: MetaMaskProvider,
@@ -167,9 +167,9 @@ describe("MetaMask provider", () => {
 
     describe("when MetaMask is already connected", () => {
       beforeEach(() => {
-        isUnlocked.mockResolvedValue(true);
-        fetchChainId.mockResolvedValue("0x1");
-        fetchAccounts.mockResolvedValue([address]);
+        isUnlocked.mockResolvedValueOnce(true);
+        fetchChainId.mockResolvedValueOnce("0x1");
+        fetchAccounts.mockResolvedValueOnce([address]);
       });
 
       test("initialization should successfully connect to the account", async () => {
@@ -186,9 +186,9 @@ describe("MetaMask provider", () => {
       });
 
       test("when account changes, it should reflect on the state", async () => {
-        isUnlocked.mockResolvedValue(true);
-        fetchChainId.mockResolvedValue("0x1");
-        fetchAccounts.mockResolvedValue([address]);
+        isUnlocked.mockResolvedValueOnce(true);
+        fetchChainId.mockResolvedValueOnce("0x1");
+        fetchAccounts.mockResolvedValueOnce([address]);
 
         const otherAddress = "0x19F7Fa0a30d5829acBD9B35bA2253a759a37EfC6";
 
@@ -216,9 +216,9 @@ describe("MetaMask provider", () => {
       });
 
       test("when account changes with empty account, it should lead to `notConnected` status", async () => {
-        isUnlocked.mockResolvedValue(true);
-        fetchChainId.mockResolvedValue("0x1");
-        fetchAccounts.mockResolvedValue([address]);
+        isUnlocked.mockResolvedValueOnce(true);
+        fetchChainId.mockResolvedValueOnce("0x1");
+        fetchAccounts.mockResolvedValueOnce([address]);
 
         const { promise, resolve } = deferred();
 
