@@ -1,14 +1,7 @@
 import { act, renderHook } from "@testing-library/react-hooks";
+import { setupEthTesting } from "eth-testing";
 
 import { useMetaMask, MetaMaskProvider } from "../";
-
-function deferred() {
-  let resolve = (_: any) => {};
-  const promise = new Promise((res) => {
-    resolve = res;
-  });
-  return { promise, resolve };
-}
 
 describe("MetaMask provider", () => {
   const address = "0x19F7Fa0a30d5829acBD9B35bA2253a759a37EfC5";
@@ -35,46 +28,29 @@ describe("MetaMask provider", () => {
   });
 
   describe("when MetaMask is available", () => {
-    const isUnlocked = jest.fn();
-    const fetchAccounts = jest.fn();
-    const fetchChainId = jest.fn();
-    const requestAccounts = jest.fn();
-    const request = jest.fn(({ method }: { method: string }) => {
-      if (method === "eth_chainId") return fetchChainId();
-      if (method === "eth_accounts") return fetchAccounts();
-      if (method === "eth_requestAccounts") return requestAccounts();
-      return;
+    let originalEth: any;
+    const { provider: ethereum, testingUtils } = setupEthTesting({
+      providerType: "MetaMask",
     });
-    const on = jest.fn();
-    const removeListener = jest.fn();
-    const ethereum = {
-      isMetaMask: true,
-      _metamask: {
-        isUnlocked,
-      },
-      request,
-      on,
-      removeListener,
-    };
 
     beforeAll(() => {
+      originalEth = (window as any).ethereum;
       (window as any).ethereum = ethereum;
     });
 
-    test("when chain changes, it should reflect on the state", async () => {
-      isUnlocked.mockResolvedValueOnce(true);
-      fetchChainId.mockResolvedValueOnce("0x1");
-      fetchAccounts.mockResolvedValueOnce([]);
+    afterAll(() => {
+      (window as any).ethereum = originalEth;
+    });
 
+    afterEach(() => {
+      testingUtils.clearAllMocks();
+    });
+
+    test("when chain changes, it should reflect on the state", async () => {
       const otherChainId = "0x2";
 
-      const { promise, resolve } = deferred();
-
-      on.mockImplementationOnce((key, callback) => {
-        if (key === "chainChanged") {
-          promise.then(callback);
-        }
-      });
+      testingUtils.mockAccounts([]);
+      testingUtils.mockChainId("0x1");
 
       const { result, waitForNextUpdate } = renderHook(useMetaMask, {
         wrapper: MetaMaskProvider,
@@ -84,17 +60,17 @@ describe("MetaMask provider", () => {
 
       expect(result.current.chainId).toEqual("0x1");
 
-      resolve(otherChainId);
-      await waitForNextUpdate();
+      act(() => {
+        testingUtils.mockChainChanged("0x2");
+      });
 
       expect(result.current.chainId).toEqual(otherChainId);
     });
 
     describe("when MetaMask is not connected", () => {
       beforeEach(() => {
-        isUnlocked.mockResolvedValueOnce(true);
-        fetchChainId.mockResolvedValueOnce("0x1");
-        fetchAccounts.mockResolvedValueOnce([]);
+        testingUtils.mockAccounts([]);
+        testingUtils.mockChainId("0x1");
       });
 
       test("when MetaMask is unlocked but no account is connected, it should end up in the `notConnected` status", async () => {
@@ -111,7 +87,7 @@ describe("MetaMask provider", () => {
       });
 
       test("calling `connect` method should end in a successful connection", async () => {
-        requestAccounts.mockResolvedValueOnce([address]);
+        testingUtils.lowLevel.mockRequest("eth_requestAccounts", [address]);
 
         const { result, waitForNextUpdate } = renderHook(useMetaMask, {
           wrapper: MetaMaskProvider,
@@ -137,7 +113,9 @@ describe("MetaMask provider", () => {
 
       test("calling `connect` method should end in the `notConnected` status if the request fails", async () => {
         const error = new Error("Test Error");
-        requestAccounts.mockRejectedValueOnce(error);
+        testingUtils.lowLevel.mockRequest("eth_requestAccounts", error, {
+          shouldThrow: true,
+        });
 
         const { result, waitForNextUpdate } = renderHook(useMetaMask, {
           wrapper: MetaMaskProvider,
@@ -167,9 +145,8 @@ describe("MetaMask provider", () => {
 
     describe("when MetaMask is already connected", () => {
       beforeEach(() => {
-        isUnlocked.mockResolvedValueOnce(true);
-        fetchChainId.mockResolvedValueOnce("0x1");
-        fetchAccounts.mockResolvedValueOnce([address]);
+        testingUtils.mockAccounts([address]);
+        testingUtils.mockChainId("0x1");
       });
 
       test("initialization should successfully connect to the account", async () => {
@@ -186,19 +163,7 @@ describe("MetaMask provider", () => {
       });
 
       test("when account changes, it should reflect on the state", async () => {
-        isUnlocked.mockResolvedValueOnce(true);
-        fetchChainId.mockResolvedValueOnce("0x1");
-        fetchAccounts.mockResolvedValueOnce([address]);
-
         const otherAddress = "0x19F7Fa0a30d5829acBD9B35bA2253a759a37EfC6";
-
-        const { promise, resolve } = deferred();
-
-        on.mockImplementation((key, callback) => {
-          if (key === "accountsChanged") {
-            promise.then(callback);
-          }
-        });
 
         const { result, waitForNextUpdate } = renderHook(useMetaMask, {
           wrapper: MetaMaskProvider,
@@ -208,26 +173,15 @@ describe("MetaMask provider", () => {
 
         expect(result.current.account).toEqual(address);
 
-        resolve([otherAddress]);
-        await waitForNextUpdate();
+        act(() => {
+          testingUtils.mockAccountsChanged([otherAddress]);
+        });
 
         expect(result.current.status).toEqual("connected");
         expect(result.current.account).toEqual(otherAddress);
       });
 
       test("when account changes with empty account, it should lead to `notConnected` status", async () => {
-        isUnlocked.mockResolvedValueOnce(true);
-        fetchChainId.mockResolvedValueOnce("0x1");
-        fetchAccounts.mockResolvedValueOnce([address]);
-
-        const { promise, resolve } = deferred();
-
-        on.mockImplementation((key, callback) => {
-          if (key === "accountsChanged") {
-            promise.then(callback);
-          }
-        });
-
         const { result, waitForNextUpdate } = renderHook(useMetaMask, {
           wrapper: MetaMaskProvider,
         });
@@ -236,8 +190,9 @@ describe("MetaMask provider", () => {
 
         expect(result.current.account).toEqual(address);
 
-        resolve([]);
-        await waitForNextUpdate();
+        act(() => {
+          testingUtils.mockAccountsChanged([]);
+        });
 
         expect(result.current.status).toEqual("notConnected");
         expect(result.current.account).toEqual(null);
