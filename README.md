@@ -18,6 +18,9 @@ yarn add metamask-react
 The first step is to wrap you `App` or any React subtree with the `MetaMaskProvider`
 ```javascript
 // index.js
+import { MetaMaskProvider } from "metamask-react";
+
+...
 
 ReactDOM.render(
   <React.StrictMode>
@@ -32,6 +35,9 @@ ReactDOM.render(
 In any React child of the provider, one can use the `useMetaMask` hook in order to access the state and methods.
 ```javascript
 // app.js
+import { useMetaMask } from "metamask-react";
+
+...
 
 function App() {
     const { status, connect, account } = useMetaMask();
