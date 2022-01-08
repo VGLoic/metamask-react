@@ -119,12 +119,9 @@ describe("MetaMask provider", () => {
           shouldThrow: true,
         });
 
-        const { result, waitForNextUpdate, waitForValueToChange } = renderHook(
-          useMetaMask,
-          {
-            wrapper: MetaMaskProvider,
-          }
-        );
+        const { result, waitForNextUpdate } = renderHook(useMetaMask, {
+          wrapper: MetaMaskProvider,
+        });
 
         expect(result.current.status).toEqual("initializing");
 
@@ -142,7 +139,7 @@ describe("MetaMask provider", () => {
           testingUtils.mockAccounts([address]);
         });
 
-        await waitForValueToChange(() => result.current.status);
+        await waitForNextUpdate();
 
         expect(result.current.status).toEqual("connected");
         expect(result.current.account).toEqual(address);
