@@ -111,6 +111,43 @@ describe("MetaMask provider", () => {
         expect(result.current.account).toEqual(address);
       });
 
+      test("calling `connect` method while a pending Metamask request is pending should end in a successful connection", async () => {
+        const error = {
+          code: -32002,
+        };
+        testingUtils.lowLevel.mockRequest("eth_requestAccounts", error, {
+          shouldThrow: true,
+        });
+
+        const { result, waitForNextUpdate, waitForValueToChange } = renderHook(
+          useMetaMask,
+          {
+            wrapper: MetaMaskProvider,
+          }
+        );
+
+        expect(result.current.status).toEqual("initializing");
+
+        await waitForNextUpdate();
+
+        expect(result.current.status).toEqual("notConnected");
+
+        act(() => {
+          result.current.connect();
+        });
+
+        expect(result.current.status).toEqual("connecting");
+
+        act(() => {
+          testingUtils.mockAccounts([address]);
+        });
+
+        await waitForValueToChange(() => result.current.status);
+
+        expect(result.current.status).toEqual("connected");
+        expect(result.current.account).toEqual(address);
+      });
+
       test("calling `connect` method should end in the `notConnected` status if the request fails", async () => {
         const error = new Error("Test Error");
         testingUtils.lowLevel.mockRequest("eth_requestAccounts", error, {
