@@ -7,6 +7,13 @@ import {
 import { Action, reducer } from "./reducer";
 import { useSafeDispatch } from "./utils/useSafeDispatch";
 
+type ErrorWithCode = {
+  code: number;
+  [key: string]: any;
+};
+// MetaMask - RPC Error: Request of type 'wallet_requestPermissions' already pending for origin [origin]. Please wait.
+const ERROR_CODE_REQUEST_PENDING = -32002;
+
 type WindowInstanceWithEthereum = Window &
   typeof globalThis & { ethereum?: any };
 
@@ -63,22 +70,50 @@ function subscribeToChainChanged(dispatch: (action: Action) => void) {
   };
 }
 
-async function requestAccounts(
+function requestAccounts(
   dispatch: (action: Action) => void
 ): Promise<string[]> {
   const ethereum = (window as WindowInstanceWithEthereum).ethereum;
 
   dispatch({ type: "metaMaskConnecting" });
-  try {
-    const accounts: string[] = await ethereum.request({
-      method: "eth_requestAccounts",
-    });
-    dispatch({ type: "metaMaskConnected", payload: { accounts } });
-    return accounts;
-  } catch (err) {
-    dispatch({ type: "metaMaskPermissionRejected" });
-    throw err;
-  }
+
+  /**
+   * Note about the pattern
+   * Instead of only relying on the RPC Request response, the resolve of the promise may happen based from a polling
+   * using the eth_accounts rpc endpoint.
+   * The reason for this change is in order to handle pending connection request on MetaMask side.
+   * See https://github.com/VGLoic/metamask-react/issues/13 for the full discussion.
+   * Any improvements on MetaMask side on this behaviour that could allow to go back to the previous, simple and safer, pattern
+   * should trigger the update of this code.
+   */
+
+  return new Promise((resolve, reject) => {
+    const intervalId = setInterval(async () => {
+      const accounts = await ethereum.request({
+        method: "eth_accounts",
+      });
+      if (accounts.length > 0) {
+        clearInterval(intervalId);
+        dispatch({ type: "metaMaskConnected", payload: { accounts } });
+        resolve(accounts);
+      }
+    }, 500);
+    ethereum
+      .request({
+        method: "eth_requestAccounts",
+      })
+      .then((accounts: string[]) => {
+        clearInterval(intervalId);
+        dispatch({ type: "metaMaskConnected", payload: { accounts } });
+        resolve(accounts);
+      })
+      .catch((err: unknown) => {
+        if ((err as ErrorWithCode)?.code === ERROR_CODE_REQUEST_PENDING) return;
+        dispatch({ type: "metaMaskPermissionRejected" });
+        clearInterval(intervalId);
+        reject(err);
+      });
+  });
 }
 
 const initialState: MetaMaskState = {
