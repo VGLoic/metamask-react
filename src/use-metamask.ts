@@ -10,3 +10,15 @@ export function useMetaMask() {
 
   return context;
 }
+
+export function useConnectedMetaMask() {
+  const context = useMetaMask();
+
+  if (context.status !== "connected") {
+    throw new Error(
+      "`useConnectedMetaMask` can only be used when the user is connected"
+    );
+  }
+
+  return context;
+}

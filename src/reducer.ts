@@ -1,40 +1,41 @@
 import { MetaMaskState } from "./metamask-context";
-interface MetaMaskUnavailable {
+
+type MetaMaskUnavailable = {
   type: "metaMaskUnavailable";
-}
-interface MetaMaskLocked {
+};
+type MetaMaskLocked = {
   type: "metaMaskLocked";
   payload: {
     chainId: string;
   };
-}
-interface MetaMaskUnlocked {
+};
+type MetaMaskUnlocked = {
   type: "metaMaskUnlocked";
   payload: {
     chainId: string;
   };
-}
-interface MetaMaskConnected {
+};
+type MetaMaskConnected = {
   type: "metaMaskConnected";
   payload: {
     accounts: string[];
-    chainId?: string;
+    chainId: string;
   };
-}
-interface MetaMaskConnecting {
+};
+type MetaMaskConnecting = {
   type: "metaMaskConnecting";
-}
-interface PermissionRejected {
+};
+type PermissionRejected = {
   type: "metaMaskPermissionRejected";
-}
-interface AccountsChanged {
+};
+type AccountsChanged = {
   type: "metaMaskAccountsChanged";
   payload: string[];
-}
-interface ChainChanged {
+};
+type ChainChanged = {
   type: "metaMaskChainChanged";
   payload: string;
-}
+};
 
 export type Action =
   | MetaMaskUnavailable
@@ -56,14 +57,12 @@ export function reducer(state: MetaMaskState, action: Action): MetaMaskState {
       };
     case "metaMaskLocked":
       return {
-        ...state,
         chainId: action.payload.chainId,
         account: null,
         status: "notConnected",
       };
     case "metaMaskUnlocked":
       return {
-        ...state,
         chainId: action.payload.chainId,
         account: null,
         status: "notConnected",
@@ -71,23 +70,41 @@ export function reducer(state: MetaMaskState, action: Action): MetaMaskState {
     case "metaMaskConnected":
       const unlockedAccounts = action.payload.accounts;
       return {
-        chainId: action.payload.chainId || state.chainId,
+        chainId: action.payload.chainId,
         account: unlockedAccounts[0],
         status: "connected",
       };
     case "metaMaskConnecting":
+      if (state.status === "initializing" || state.status === "unavailable") {
+        console.warn(
+          `Invalid state transition from "${state.status}" to "connecting". Please, file an issue.`
+        );
+        return state;
+      }
       return {
         ...state,
         account: null,
         status: "connecting",
       };
     case "metaMaskPermissionRejected":
+      if (state.status === "initializing" || state.status === "unavailable") {
+        console.warn(
+          `Invalid state transition from "${state.status}" to "connecting". Please, file an issue.`
+        );
+        return state;
+      }
       return {
         ...state,
         account: null,
         status: "notConnected",
       };
     case "metaMaskAccountsChanged":
+      if (state.status !== "connected") {
+        console.warn(
+          `Invalid accounts change in "${state.status}". Please, file an issue.`
+        );
+        return state;
+      }
       const accounts = action.payload;
       if (accounts.length === 0) {
         return {
@@ -101,6 +118,12 @@ export function reducer(state: MetaMaskState, action: Action): MetaMaskState {
         account: accounts[0],
       };
     case "metaMaskChainChanged":
+      if (state.status === "initializing" || state.status === "unavailable") {
+        console.warn(
+          `Invalid chain ID change in "${state.status}". Please, file an issue.`
+        );
+        return state;
+      }
       return {
         ...state,
         chainId: action.payload,

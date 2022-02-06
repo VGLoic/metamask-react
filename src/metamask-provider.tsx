@@ -92,23 +92,31 @@ function requestAccounts(
       const accounts = await ethereum.request({
         method: "eth_accounts",
       });
-      if (accounts.length > 0) {
-        clearInterval(intervalId);
-        dispatch({ type: "metaMaskConnected", payload: { accounts } });
-        resolve(accounts);
-      }
-    }, 500);
+      if (accounts.length === 0) return;
+      clearInterval(intervalId);
+      const chainId: string = await ethereum.request({
+        method: "eth_chainId",
+      });
+      dispatch({ type: "metaMaskConnected", payload: { accounts, chainId } });
+      resolve(accounts);
+    }, 200);
     ethereum
       .request({
         method: "eth_requestAccounts",
       })
-      .then((accounts: string[]) => {
+      .then(async (accounts: string[]) => {
         clearInterval(intervalId);
-        dispatch({ type: "metaMaskConnected", payload: { accounts } });
+        const chainId: string = await ethereum.request({
+          method: "eth_chainId",
+        });
+        dispatch({ type: "metaMaskConnected", payload: { accounts, chainId } });
         resolve(accounts);
       })
       .catch((err: unknown) => {
-        if ((err as ErrorWithCode)?.code === ERROR_CODE_REQUEST_PENDING) return;
+        if ("code" in (err as { [key: string]: any })) {
+          if ((err as ErrorWithCode).code === ERROR_CODE_REQUEST_PENDING)
+            return;
+        }
         dispatch({ type: "metaMaskPermissionRejected" });
         clearInterval(intervalId);
         reject(err);
