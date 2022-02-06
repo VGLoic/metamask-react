@@ -73,6 +73,23 @@ describe("MetaMask provider", () => {
         testingUtils.mockChainId("0x1");
       });
 
+      test("when MetaMask is locked, it should end up in the `notConnected` status", async () => {
+        jest
+          .spyOn((ethereum as any)._metamask, "isUnlocked")
+          .mockReturnValueOnce(false);
+
+        const { result, waitForNextUpdate } = renderHook(useMetaMask, {
+          wrapper: MetaMaskProvider,
+        });
+
+        expect(result.current.status).toEqual("initializing");
+
+        await waitForNextUpdate();
+
+        expect(result.current.chainId).toEqual("0x1");
+        expect(result.current.status).toEqual("notConnected");
+      });
+
       test("when MetaMask is unlocked but no account is connected, it should end up in the `notConnected` status", async () => {
         const { result, waitForNextUpdate } = renderHook(useMetaMask, {
           wrapper: MetaMaskProvider,
@@ -115,6 +132,9 @@ describe("MetaMask provider", () => {
         const error = {
           code: -32002,
         };
+        testingUtils.clearAllMocks();
+        testingUtils.lowLevel.mockRequest("eth_accounts", []);
+
         testingUtils.lowLevel.mockRequest("eth_requestAccounts", error, {
           shouldThrow: true,
         });
@@ -136,7 +156,8 @@ describe("MetaMask provider", () => {
         expect(result.current.status).toEqual("connecting");
 
         act(() => {
-          testingUtils.mockAccounts([address]);
+          testingUtils.lowLevel.mockRequest("eth_accounts", []);
+          testingUtils.lowLevel.mockRequest("eth_accounts", [address]);
         });
 
         await waitForNextUpdate();
@@ -146,7 +167,7 @@ describe("MetaMask provider", () => {
       });
 
       test("calling `connect` method should end in the `notConnected` status if the request fails", async () => {
-        const error = new Error("Test Error");
+        const error = { code: -21 };
         testingUtils.lowLevel.mockRequest("eth_requestAccounts", error, {
           shouldThrow: true,
         });
