@@ -4,19 +4,22 @@ Simplistic Context provider and consumer hook in order to manage MetaMask in the
 
 ## Installation
 
-The recommend way to use MetaMask React with a React app is to install it as a dependency:
-```shell
-# If you use npm:
-npm install metamask-react
+The recommend way to use MetaMask React with a React app is to install it as a dependency.
 
-# Or if you use Yarn:
+If you use `npm`:
+```console
+npm install metamask-react
+```
+
+Or if you use `yarn`:
+```console
 yarn add metamask-react
 ```
 
-## Example
+## Quick Start
 
 The first step is to wrap you `App` or any React subtree with the `MetaMaskProvider`
-```javascript
+```TypeScript
 // index.js
 import { MetaMaskProvider } from "metamask-react";
 
@@ -33,14 +36,14 @@ ReactDOM.render(
 ```
 
 In any React child of the provider, one can use the `useMetaMask` hook in order to access the state and methods.
-```javascript
+```TypeScript
 // app.js
 import { useMetaMask } from "metamask-react";
 
 ...
 
 function App() {
-    const { status, connect, account } = useMetaMask();
+    const { status, connect, account, chainId, ethereum } = useMetaMask();
 
     if (status === "initializing") return <div>Synchronisation with MetaMask ongoing...</div>
 
@@ -50,7 +53,7 @@ function App() {
 
     if (status === "connecting") return <div>Connecting...</div>
 
-    if (status === "connected") return <div>Connected account: {account}</div>
+    if (status === "connected") return <div>Connected account {account} on chain ID ${chainId}</div>
 
     return null;
 }
@@ -73,3 +76,6 @@ Here is an abstract on the different statuses:
 - `connected`: MetaMask is connected to the application
 - `connecting`: the connection of your accounts to the application is ongoing
 
+## Type safe hook
+
+Most of the time, the application will use the state when the user is connected, i.e. with status `connected`. Therefore the hook `useConnectedMetaMask` is additionally exposed, it is the same hook as `useMetaMask` but is typed with the connected state, e.g. the `account` or the `chainId` are necessarily not `null`. This hook is only usable when the status is equal to `connected`, it will throw otherwise.
