@@ -29,19 +29,12 @@ async function synchronize(dispatch: (action: Action) => void) {
     method: "eth_chainId",
   });
 
-  const isUnlocked = await ethereum._metamask.isUnlocked();
-
-  if (!isUnlocked) {
-    dispatch({ type: "metaMaskLocked", payload: { chainId } });
-    return;
-  }
-
   const accessibleAccounts: string[] = await ethereum.request({
     method: "eth_accounts",
   });
 
   if (accessibleAccounts.length === 0) {
-    dispatch({ type: "metaMaskUnlocked", payload: { chainId } });
+    dispatch({ type: "metaMaskNotConnected", payload: { chainId } });
   } else {
     dispatch({
       type: "metaMaskConnected",
