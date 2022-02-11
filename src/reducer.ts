@@ -3,14 +3,8 @@ import { MetaMaskState } from "./metamask-context";
 type MetaMaskUnavailable = {
   type: "metaMaskUnavailable";
 };
-type MetaMaskLocked = {
-  type: "metaMaskLocked";
-  payload: {
-    chainId: string;
-  };
-};
-type MetaMaskUnlocked = {
-  type: "metaMaskUnlocked";
+type MetaMaskNotConnected = {
+  type: "metaMaskNotConnected";
   payload: {
     chainId: string;
   };
@@ -39,8 +33,7 @@ type ChainChanged = {
 
 export type Action =
   | MetaMaskUnavailable
-  | MetaMaskLocked
-  | MetaMaskUnlocked
+  | MetaMaskNotConnected
   | MetaMaskConnected
   | MetaMaskConnecting
   | PermissionRejected
@@ -55,13 +48,7 @@ export function reducer(state: MetaMaskState, action: Action): MetaMaskState {
         account: null,
         status: "unavailable",
       };
-    case "metaMaskLocked":
-      return {
-        chainId: action.payload.chainId,
-        account: null,
-        status: "notConnected",
-      };
-    case "metaMaskUnlocked":
+    case "metaMaskNotConnected":
       return {
         chainId: action.payload.chainId,
         account: null,
