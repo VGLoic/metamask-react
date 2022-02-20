@@ -53,7 +53,7 @@ function App() {
 
     if (status === "connecting") return <div>Connecting...</div>
 
-    if (status === "connected") return <div>Connected account {account} on chain ID ${chainId}</div>
+    if (status === "connected") return <div>Connected account {account} on chain ID {chainId}</div>
 
     return null;
 }
@@ -63,11 +63,11 @@ function App() {
 
 The `MetaMaskProvider` will first initialise the state with `initializing` status, the `account` and `chainId` will be `null`. A synchronization is performed in order to derive the MetaMask state.
 
-If the `ethereum` object is not present or if it is the one associated to MetaMask, the synchronisation will change the status to `unavailable`.
+If the `ethereum` object is not present or if it is not the one associated to MetaMask, the synchronisation will change the status to `unavailable`.
 
 Otherwise, a check is performed in order to detect if MetaMask has already connected accounts for the application.
 
-In case of no connected accounts, the status will be `unabled`, otherwise the status will be `enabled`.
+In case of no connected accounts, the status will be `notConnected`, otherwise the status will be `connected`.
 
 Here is an abstract on the different statuses:
 - `initializing`: the provider is currently initializing by synchronizing with MetaMask
@@ -79,3 +79,15 @@ Here is an abstract on the different statuses:
 ## Type safe hook
 
 Most of the time, the application will use the state when the user is connected, i.e. with status `connected`. Therefore the hook `useConnectedMetaMask` is additionally exposed, it is the same hook as `useMetaMask` but is typed with the connected state, e.g. the `account` or the `chainId` are necessarily not `null`. This hook is only usable when the status is equal to `connected`, it will throw otherwise.
+```TypeScript
+function MyComponent() {
+  const {
+    // typed as string - can not be null
+    account,
+    // typed as string - can not be null
+    chainId
+  } = useConnectedMetaMask();
+
+  return <div>Connected account {account} on chain ID {chainId}</div>
+}
+```
