@@ -1,5 +1,7 @@
 # MetaMask React
 
+[![Coverage Status](https://coveralls.io/repos/github/VGLoic/metamask-react/badge.svg?branch=main)](https://coveralls.io/github/VGLoic/metamask-react?branch=main)
+
 Simplistic Context provider and consumer hook in order to manage MetaMask in the browser.
 
 ## Installation
