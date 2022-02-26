@@ -93,3 +93,6 @@ function MyComponent() {
   return <div>Connected account {account} on chain ID {chainId}</div>
 }
 ```
+## Contributing :rocket:
+
+Contributions are welcome! Please follow the guidelines in the [contributing document](/CONTRIBUTING.md).
