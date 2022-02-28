@@ -1,0 +1,31 @@
+name: 🐛 Bug Report
+description: Something isn't working correctly.
+body: 
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for contributing to open source!
+
+        Think you found a bug?
+        ======================
+        The best bug report is a failing test in the repository as a pull request. Otherwise, please use the form below.
+  - type: textarea
+    attributes:
+      label: What version of React and MetaMask-React are you using?
+      value: |
+        - React: 
+        - MetaMask-React:
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What is the current behavior?
+      description: |
+        If the current behavior is a bug, please provide the steps to reproduce and if possible a minimal demo of the problem. Your bug will get fixed much faster if we can run your code and it doesn't have dependencies other than React. Paste the link to a CodeSandbox (https://codesandbox.io/s/new) example below
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What is the expected behavior?
+    validations:
+      required: true

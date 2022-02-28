@@ -1,0 +1,19 @@
+name: 👍 Feature Request
+description: I'd like MetaMask-React to do something new.
+body: 
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for contributing to open source!
+  - type: textarea
+    attributes:
+      label: What is the new or updated feature that you are suggesting?
+      description: |
+        Please provide thoughtful commentary *and code samples* on what this feature means for your product. What will it allow you to do that you can't do today? How will it make current work-arounds straightforward? What potential bugs and edge cases does it help to avoid? etc. Please keep it product-centric.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Why should this feature be included?
+    validations:
+      required: true
