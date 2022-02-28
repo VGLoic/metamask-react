@@ -1,0 +1,12 @@
+name: 🤔 Questions and Help
+description: The place to ask and / or say anything.
+body: 
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for contributing to open source!
+  - type: textarea
+    attributes:
+      label: Open
+    validations:
+      required: true
