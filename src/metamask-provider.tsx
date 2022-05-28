@@ -3,6 +3,7 @@ import {
   IMetaMaskContext,
   MetaMaskState,
   MetamaskContext,
+  AddEthereumChainParameter,
 } from "./metamask-context";
 import { Action, reducer } from "./reducer";
 import { useSafeDispatch } from "./utils/useSafeDispatch";
@@ -117,6 +118,22 @@ function requestAccounts(
   });
 }
 
+async function addEthereumChain(parameters: AddEthereumChainParameter) {
+  const ethereum = (window as WindowInstanceWithEthereum).ethereum;
+  await ethereum.request({
+    method: "wallet_addEthereumChain",
+    params: [parameters],
+  });
+}
+
+async function switchEthereumChain(chainId: string) {
+  const ethereum = (window as WindowInstanceWithEthereum).ethereum;
+  await ethereum.request({
+    method: "wallet_switchEthereumChain",
+    params: [{ chainId }],
+  });
+}
+
 const initialState: MetaMaskState = {
   status: "initializing",
   account: null,
@@ -160,15 +177,43 @@ export function MetaMaskProvider(props: any) {
     return requestAccounts(dispatch);
   }, [dispatch, isAvailable]);
 
+  const addChain = React.useCallback(
+    (parameters: AddEthereumChainParameter) => {
+      if (!isAvailable) {
+        console.warn(
+          "`addChain` method has been called while MetaMask is not available or synchronising. Nothing will be done in this case."
+        );
+        return Promise.resolve();
+      }
+      return addEthereumChain(parameters);
+    },
+    [isAvailable]
+  );
+
+  const switchChain = React.useCallback(
+    (chainId: string) => {
+      if (!isAvailable) {
+        console.warn(
+          "`switchChain` method has been called while MetaMask is not available or synchronising. Nothing will be done in this case."
+        );
+        return Promise.resolve();
+      }
+      return switchEthereumChain(chainId);
+    },
+    [isAvailable]
+  );
+
   const value: IMetaMaskContext = React.useMemo(
     () => ({
       ...state,
       connect,
+      addChain,
+      switchChain,
       ethereum: isAvailable
         ? (window as WindowInstanceWithEthereum).ethereum
         : null,
     }),
-    [connect, state, isAvailable]
+    [connect, addChain, switchChain, state, isAvailable]
   );
   return <MetamaskContext.Provider value={value} {...props} />;
 }
