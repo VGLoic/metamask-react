@@ -120,18 +120,32 @@ function requestAccounts(
 
 async function addEthereumChain(parameters: AddEthereumChainParameter) {
   const ethereum = (window as WindowInstanceWithEthereum).ethereum;
-  await ethereum.request({
-    method: "wallet_addEthereumChain",
-    params: [parameters],
-  });
+  try {
+    await ethereum.request({
+      method: "wallet_addEthereumChain",
+      params: [parameters],
+    });
+  } catch (err: unknown) {
+    if ("code" in (err as { [key: string]: any })) {
+      if ((err as ErrorWithCode).code === ERROR_CODE_REQUEST_PENDING) return;
+    }
+    throw err;
+  }
 }
 
 async function switchEthereumChain(chainId: string) {
   const ethereum = (window as WindowInstanceWithEthereum).ethereum;
-  await ethereum.request({
-    method: "wallet_switchEthereumChain",
-    params: [{ chainId }],
-  });
+  try {
+    await ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId }],
+    });
+  } catch (err: unknown) {
+    if ("code" in (err as { [key: string]: any })) {
+      if ((err as ErrorWithCode).code === ERROR_CODE_REQUEST_PENDING) return;
+    }
+    throw err;
+  }
 }
 
 const initialState: MetaMaskState = {
