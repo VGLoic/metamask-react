@@ -78,6 +78,66 @@ Here is an abstract on the different statuses:
 - `connected`: MetaMask is connected to the application
 - `connecting`: the connection of your accounts to the application is ongoing
 
+## Chain utils
+
+The context exposes two methods in order to facilitate the management of the networks. These methods are wrappers around the JSON RPC requests handled by MetaMask, see [MetaMask documentation](https://docs.metamask.io/guide/rpc-api.html#table-of-contents) for additonal informations.
+
+The first one is to request a switch to a different network
+```TypeScript
+function WrongNetwork() {
+  const { switchChain } = useMetaMask();
+  // Request a switch to Ethereum Mainnet
+  return (
+    <button onClick={() => switchChain("0x1")}>Switch to Ethereum Mainnet</button>
+  )
+}
+```
+
+The second one is a request to add to MetaMask a network and then connect to it
+```TypeScript
+function WrongNetwork() {
+  const { addChain } = useMetaMask();
+  const gnosisChainNetworkParams = {
+    chainId: "0x64",
+    chainName: "Gnosis Chain",
+    rpcUrls: ["https://rpc.gnosischain.com/"],
+    nativeCurrency: {
+      name: "xDAI",
+      symbol: "xDAI",
+      decimals: 18,
+    },
+    blockExplorerUrls: ["https://blockscout.com/xdai/mainnet/"]
+  };
+  // Request to add Gnosis chain and then switch to it
+  return (
+    <button onClick={() => addChain(gnosisChainNetworkParams)}>Add Gnosis chain</button>
+  )
+}
+```
+
+Finally, here is a non exhaustive list of the networks and their chain IDs
+```TypeScript
+const networks = {
+  mainnet: "0x1", // 1
+  // Test nets
+  goerli: "0x5", // 5
+  ropsten: "0x3", // 3
+  rinkeby: "0x4", // 4
+  kovan: "0x2a", // 42
+  mumbai: "0x13881", // 80001
+  // Layers 2
+  arbitrum: "0xa4b1", // 42161
+  optimism: "0xa", // 10
+  // Side chains
+  polygon: "0x89", // 137
+  gnosisChain: "0x64", // 100
+  // Alt layer 1
+  binanceSmartChain: "0x38", // 56
+  avalanche: "0xa86a", // 43114
+  cronos: "0x19", // 25
+  fantom: "0xfa" // 250
+}
+```
 ## Type safe hook
 
 Most of the time, the application will use the state when the user is connected, i.e. with status `connected`. Therefore the hook `useConnectedMetaMask` is additionally exposed, it is the same hook as `useMetaMask` but is typed with the connected state, e.g. the `account` or the `chainId` are necessarily not `null`. This hook is only usable when the status is equal to `connected`, it will throw otherwise.
