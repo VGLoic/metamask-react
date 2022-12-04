@@ -21,7 +21,7 @@ describe("`window.ethereum` conflict tests", () => {
       (window as any).ethereum = originalEth;
     });
 
-    test("when the `providerMap` does have a `MetaMask` value with a valid provider, it should synchronise in `notConnected` status", async () => {
+    test("when the `providers` does have a valid MetaMask provider, it should synchronise in `notConnected` status", async () => {
       let originalEth = (window as any).ethereum;
       const testingUtils = generateTestingUtils();
       const coinbaseProvider = testingUtils.getProvider();
@@ -50,7 +50,7 @@ describe("`window.ethereum` conflict tests", () => {
     });
   });
 
-  test("when the `ethereum` object is corrupted or removed in the meantime, it should throw", async () => {
+  test("when the `MetaMask` provider is corrupted or removed in the meantime, it should throw", async () => {
     let originalEth = (window as any).ethereum;
     const testingUtils = generateTestingUtils();
     const coinbaseProvider = testingUtils.getProvider();
