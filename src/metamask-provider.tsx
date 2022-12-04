@@ -23,9 +23,9 @@ function getMetaMaskProvider() {
   if (!ethereum) return null;
   // The `providerMap` field is populated when CoinBase Wallet extension is also installed
   // The expected object is a map, the MetaMask provider is then stored under the key 'MetaMask'
-  if (ethereum.providerMap) {
-    const metaMaskProvider = ethereum.providerMap.get("MetaMask");
-    if (!metaMaskProvider || !metaMaskProvider.isMetaMask) return null;
+  if (Array.isArray(ethereum.providers)) {
+    const metaMaskProvider = ethereum.providers.find((p: any) => p.isMetaMask);
+    if (!metaMaskProvider) return null;
     return metaMaskProvider;
   }
   if (!ethereum.isMetaMask) return null;

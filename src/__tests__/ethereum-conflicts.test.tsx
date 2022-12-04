@@ -5,33 +5,12 @@ import { useMetaMask, MetaMaskProvider } from "../";
 
 describe("`window.ethereum` conflict tests", () => {
   describe("when the `ethereum` object has a `providerMap` field", () => {
-    test("when the `providerMap` does not have a `MetaMask` value, it should synchronise in `unavailable` status", async () => {
+    test("when the `providers` does not have a `MetaMask` provider, it should synchronise in `unavailable` status", async () => {
       let originalEth = (window as any).ethereum;
       const testingUtils = generateTestingUtils();
       const coinbaseProvider = testingUtils.getProvider();
       const ethereum = {
-        providerMap: new Map([["CoinbaseWallet", coinbaseProvider]]),
-      };
-      (window as any).ethereum = ethereum;
-
-      const { result } = renderHook(useMetaMask, { wrapper: MetaMaskProvider });
-
-      expect(result.current.status).toEqual("unavailable");
-
-      (window as any).ethereum = originalEth;
-    });
-
-    test("when the `providerMap` does have a `MetaMask` value but with an invalid provider, it should synchronise in `unavailable` status", async () => {
-      let originalEth = (window as any).ethereum;
-      const testingUtils = generateTestingUtils();
-      const coinbaseProvider = testingUtils.getProvider();
-      const unknownTestingUtils = generateTestingUtils();
-      const unknownProvider = unknownTestingUtils.getProvider();
-      const ethereum = {
-        providerMap: new Map([
-          ["CoinbaseWallet", coinbaseProvider],
-          ["MetaMask", unknownProvider],
-        ]),
+        providers: [coinbaseProvider],
       };
       (window as any).ethereum = ethereum;
 
@@ -51,10 +30,7 @@ describe("`window.ethereum` conflict tests", () => {
       });
       const metaMaskProvider = metaMaskTestingUtils.getProvider();
       const ethereum = {
-        providerMap: new Map([
-          ["CoinbaseWallet", coinbaseProvider],
-          ["MetaMask", metaMaskProvider],
-        ]),
+        providers: [coinbaseProvider, metaMaskProvider],
       };
       (window as any).ethereum = ethereum;
 
@@ -74,7 +50,7 @@ describe("`window.ethereum` conflict tests", () => {
     });
   });
 
-  test("when the `ethereum` object is corrupted in the meantime, it should throw", async () => {
+  test("when the `ethereum` object is corrupted or removed in the meantime, it should throw", async () => {
     let originalEth = (window as any).ethereum;
     const testingUtils = generateTestingUtils();
     const coinbaseProvider = testingUtils.getProvider();
@@ -82,13 +58,8 @@ describe("`window.ethereum` conflict tests", () => {
       providerType: "MetaMask",
     });
     const metaMaskProvider = metaMaskTestingUtils.getProvider();
-    const unknownTestingUtils = generateTestingUtils();
-    const unknownProvider = unknownTestingUtils.getProvider();
-    const providerMap = new Map([
-      ["CoinbaseWallet", coinbaseProvider],
-      ["MetaMask", metaMaskProvider],
-    ]);
-    const ethereum = { providerMap };
+    const providers = [coinbaseProvider, metaMaskProvider];
+    const ethereum = { providers };
     (window as any).ethereum = ethereum;
 
     metaMaskTestingUtils.mockNotConnectedWallet();
@@ -103,7 +74,7 @@ describe("`window.ethereum` conflict tests", () => {
 
     expect(result.current.status).toEqual("notConnected");
 
-    providerMap.set("MetaMask", unknownProvider);
+    providers.pop();
 
     expect(() => result.current.connect()).toThrowError(
       "MetaMask provider must be present in order to use this method"
