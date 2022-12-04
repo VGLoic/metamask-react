@@ -21,8 +21,9 @@ type WindowInstanceWithEthereum = Window &
 function getMetaMaskProvider() {
   const ethereum = (window as WindowInstanceWithEthereum).ethereum;
   if (!ethereum) return null;
-  // The `providerMap` field is populated when CoinBase Wallet extension is also installed
-  // The expected object is a map, the MetaMask provider is then stored under the key 'MetaMask'
+  // The `providers` field is populated when CoinBase Wallet extension is also installed
+  // The expected object is an array of providers, the MetaMask provider is inside
+  // See https://docs.cloud.coinbase.com/wallet-sdk/docs/injected-provider-guidance for more information
   if (Array.isArray(ethereum.providers)) {
     const metaMaskProvider = ethereum.providers.find((p: any) => p.isMetaMask);
     if (!metaMaskProvider) return null;
