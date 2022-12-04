@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react-hooks";
-import { setupEthTesting } from "eth-testing";
+import { generateTestingUtils } from "eth-testing";
 
 import { useMetaMask, MetaMaskProvider } from "../";
 
@@ -22,6 +22,15 @@ describe("MetaMask provider", () => {
 
   describe("when MetaMask is not available", () => {
     test("when there is no `ethereum` object in the window, it should synchronise into `unavailable` status", async () => {
+      let originalEth = (window as any).ethereum;
+      const testingUtils = generateTestingUtils();
+      const unknownProvider = testingUtils.getProvider();
+      (window as any).ethereum = unknownProvider;
+      const { result } = renderHook(useMetaMask, { wrapper: MetaMaskProvider });
+      expect(result.current.status).toEqual("unavailable");
+      (window as any).ethereum = originalEth;
+    });
+    test("when there is an `ethereum` object in the window but it is not a MetaMask type, it should synchronise into `unavailable` status", async () => {
       const { result } = renderHook(useMetaMask, { wrapper: MetaMaskProvider });
 
       expect(result.current.status).toEqual("unavailable");
@@ -65,13 +74,13 @@ describe("MetaMask provider", () => {
 
   describe("when MetaMask is available", () => {
     let originalEth: any;
-    const { provider: ethereum, testingUtils } = setupEthTesting({
+    const testingUtils = generateTestingUtils({
       providerType: "MetaMask",
     });
 
     beforeAll(() => {
       originalEth = (window as any).ethereum;
-      (window as any).ethereum = ethereum;
+      (window as any).ethereum = testingUtils.getProvider();
     });
 
     afterAll(() => {

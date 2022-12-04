@@ -18,10 +18,33 @@ const ERROR_CODE_REQUEST_PENDING = -32002;
 type WindowInstanceWithEthereum = Window &
   typeof globalThis & { ethereum?: any };
 
-async function synchronize(dispatch: (action: Action) => void) {
+function getMetaMaskProvider() {
   const ethereum = (window as WindowInstanceWithEthereum).ethereum;
-  const isMetaMaskAvailable = Boolean(ethereum) && ethereum.isMetaMask;
-  if (!isMetaMaskAvailable) {
+  if (!ethereum) return null;
+  // The `providerMap` field is populated when CoinBase Wallet extension is also installed
+  // The expected object is a map, the MetaMask provider is then stored under the key 'MetaMask'
+  if (ethereum.providerMap) {
+    const metaMaskProvider = ethereum.providerMap.get("MetaMask");
+    if (!metaMaskProvider || !metaMaskProvider.isMetaMask) return null;
+    return metaMaskProvider;
+  }
+  if (!ethereum.isMetaMask) return null;
+  return ethereum;
+}
+
+function getSafeMetaMaskProvider() {
+  const ethereum = getMetaMaskProvider();
+  if (!ethereum) {
+    throw new Error(
+      "MetaMask provider must be present in order to use this method"
+    );
+  }
+  return ethereum;
+}
+
+async function synchronize(dispatch: (action: Action) => void) {
+  const ethereum = getMetaMaskProvider();
+  if (!ethereum) {
     dispatch({ type: "metaMaskUnavailable" });
     return;
   }
@@ -45,7 +68,7 @@ async function synchronize(dispatch: (action: Action) => void) {
 }
 
 function subsribeToAccountsChanged(dispatch: (action: Action) => void) {
-  const ethereum = (window as WindowInstanceWithEthereum).ethereum;
+  const ethereum = getSafeMetaMaskProvider();
   const onAccountsChanged = (accounts: string[]) =>
     dispatch({ type: "metaMaskAccountsChanged", payload: accounts });
   ethereum.on("accountsChanged", onAccountsChanged);
@@ -55,7 +78,7 @@ function subsribeToAccountsChanged(dispatch: (action: Action) => void) {
 }
 
 function subscribeToChainChanged(dispatch: (action: Action) => void) {
-  const ethereum = (window as WindowInstanceWithEthereum).ethereum;
+  const ethereum = getSafeMetaMaskProvider();
   const onChainChanged = (chainId: string) =>
     dispatch({ type: "metaMaskChainChanged", payload: chainId });
   ethereum.on("chainChanged", onChainChanged);
@@ -67,7 +90,7 @@ function subscribeToChainChanged(dispatch: (action: Action) => void) {
 function requestAccounts(
   dispatch: (action: Action) => void
 ): Promise<string[]> {
-  const ethereum = (window as WindowInstanceWithEthereum).ethereum;
+  const ethereum = getSafeMetaMaskProvider();
 
   dispatch({ type: "metaMaskConnecting" });
 
@@ -119,7 +142,7 @@ function requestAccounts(
 }
 
 async function addEthereumChain(parameters: AddEthereumChainParameter) {
-  const ethereum = (window as WindowInstanceWithEthereum).ethereum;
+  const ethereum = getSafeMetaMaskProvider();
   try {
     await ethereum.request({
       method: "wallet_addEthereumChain",
@@ -134,7 +157,7 @@ async function addEthereumChain(parameters: AddEthereumChainParameter) {
 }
 
 async function switchEthereumChain(chainId: string) {
-  const ethereum = (window as WindowInstanceWithEthereum).ethereum;
+  const ethereum = getSafeMetaMaskProvider();
   try {
     await ethereum.request({
       method: "wallet_switchEthereumChain",
@@ -223,9 +246,7 @@ export function MetaMaskProvider(props: any) {
       connect,
       addChain,
       switchChain,
-      ethereum: isAvailable
-        ? (window as WindowInstanceWithEthereum).ethereum
-        : null,
+      ethereum: isAvailable ? getSafeMetaMaskProvider() : null,
     }),
     [connect, addChain, switchChain, state, isAvailable]
   );
