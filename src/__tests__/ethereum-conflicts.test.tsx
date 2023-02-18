@@ -28,13 +28,48 @@ describe("`window.ethereum` conflict tests", () => {
       const metaMaskTestingUtils = generateTestingUtils({
         providerType: "MetaMask",
       });
+      const braveWalletTestingUtils = generateTestingUtils({
+        providerType: "MetaMask",
+      });
+      const braveWalletProvider = braveWalletTestingUtils.getProvider();
+      (braveWalletProvider as any).isBraveWallet = true;
+
       const metaMaskProvider = metaMaskTestingUtils.getProvider();
       const ethereum = {
-        providers: [coinbaseProvider, metaMaskProvider],
+        providers: [coinbaseProvider, braveWalletProvider, metaMaskProvider],
       };
       (window as any).ethereum = ethereum;
 
       metaMaskTestingUtils.mockNotConnectedWallet();
+
+      const { result, waitForNextUpdate } = renderHook(useMetaMask, {
+        wrapper: MetaMaskProvider,
+      });
+
+      expect(result.current.status).toEqual("initializing");
+
+      await waitForNextUpdate();
+
+      expect(result.current.status).toEqual("notConnected");
+
+      (window as any).ethereum = originalEth;
+    });
+
+    test("when the `providers` does have a valid Brave Wallet provider, it should synchronise in `notConnected` status", async () => {
+      let originalEth = (window as any).ethereum;
+      const testingUtils = generateTestingUtils();
+      const coinbaseProvider = testingUtils.getProvider();
+      const braveWalletTestingUtils = generateTestingUtils({
+        providerType: "MetaMask",
+      });
+      const braveWalletProvider = braveWalletTestingUtils.getProvider();
+      (braveWalletProvider as any).isBraveWallet = true;
+      const ethereum = {
+        providers: [coinbaseProvider, braveWalletProvider],
+      };
+      (window as any).ethereum = ethereum;
+
+      braveWalletTestingUtils.mockNotConnectedWallet();
 
       const { result, waitForNextUpdate } = renderHook(useMetaMask, {
         wrapper: MetaMaskProvider,
