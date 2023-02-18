@@ -287,6 +287,45 @@ describe("MetaMask provider", () => {
         expect(result.current.status).toEqual("notConnected");
       });
 
+      test("when a manual connection happens, account should be available", async () => {
+        const { result, waitForNextUpdate } = renderHook(useMetaMask, {
+          wrapper: MetaMaskProvider,
+        });
+
+        expect(result.current.status).toEqual("initializing");
+
+        await waitForNextUpdate();
+
+        expect(result.current.status).toEqual("notConnected");
+
+        act(() => {
+          testingUtils.mockAccountsChanged([address]);
+        });
+
+        await waitForNextUpdate();
+
+        expect(result.current.status).toEqual("connected");
+        expect(result.current.account).toEqual(address);
+      });
+
+      test("when an empty accounts changed event happens, nothing should happen", async () => {
+        const { result, waitForNextUpdate } = renderHook(useMetaMask, {
+          wrapper: MetaMaskProvider,
+        });
+
+        expect(result.current.status).toEqual("initializing");
+
+        await waitForNextUpdate();
+
+        expect(result.current.status).toEqual("notConnected");
+
+        act(() => {
+          testingUtils.mockAccountsChanged([]);
+        });
+
+        expect(result.current.status).toEqual("notConnected");
+      });
+
       test("calling `connect` method should end in a successful connection", async () => {
         testingUtils.lowLevel.mockRequest("eth_requestAccounts", [address]);
 

@@ -68,6 +68,27 @@ async function synchronize(dispatch: (action: Action) => void) {
   }
 }
 
+function subscribeToManualConnection(dispatch: (action: Action) => void) {
+  const ethereum = getSafeMetaMaskProvider();
+  const onAccountsChanged = async (accounts: string[]) => {
+    if (accounts.length === 0) return;
+    const chainId: string = await ethereum.request({
+      method: "eth_chainId",
+    });
+    dispatch({
+      type: "metaMaskConnected",
+      payload: {
+        accounts,
+        chainId,
+      },
+    });
+  };
+  ethereum.on("accountsChanged", onAccountsChanged);
+  return () => {
+    ethereum.removeListener("accountsChanged", onAccountsChanged);
+  };
+}
+
 function subsribeToAccountsChanged(dispatch: (action: Action) => void) {
   const ethereum = getSafeMetaMaskProvider();
   const onAccountsChanged = (accounts: string[]) =>
@@ -204,6 +225,13 @@ export function MetaMaskProvider(props: any) {
     const unsubscribe = subscribeToChainChanged(dispatch);
     return unsubscribe;
   }, [dispatch, isAvailable]);
+
+  const isAvailableAndNotConnected = status === "notConnected";
+  React.useEffect(() => {
+    if (!isAvailableAndNotConnected) return () => {};
+    const unsubscribe = subscribeToManualConnection(dispatch);
+    return unsubscribe;
+  }, [dispatch, isAvailableAndNotConnected]);
 
   const connect = React.useCallback(() => {
     if (!isAvailable) {
