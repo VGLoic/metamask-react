@@ -1,5 +1,6 @@
 import * as React from "react";
 import { MetamaskContext } from "./metamask-context";
+import { Status } from "./constants";
 
 export function useMetaMask() {
   const context = React.useContext(MetamaskContext);
@@ -14,7 +15,7 @@ export function useMetaMask() {
 export function useConnectedMetaMask() {
   const context = useMetaMask();
 
-  if (context.status !== "connected") {
+  if (context.status !== Status.CONNECTED) {
     throw new Error(
       "`useConnectedMetaMask` can only be used when the user is connected"
     );

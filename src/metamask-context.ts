@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { Status } from "./constants";
+
 export type AddEthereumChainParameter = {
   chainId: string;
   blockExplorerUrls?: string[];
@@ -16,31 +18,31 @@ export type AddEthereumChainParameter = {
 type MetaMaskInitializing = {
   account: null;
   chainId: null;
-  status: "initializing";
+  status: Status.INITIALIZING;
 };
 
 type MetaMaskUnavailable = {
   account: null;
   chainId: null;
-  status: "unavailable";
+  status: Status.UNAVAILABLE;
 };
 
 type MetaMaskNotConnected = {
   account: null;
   chainId: string;
-  status: "notConnected";
+  status: Status.NOT_CONNECTED;
 };
 
 type MetaMaskConnecting = {
   account: null;
   chainId: string;
-  status: "connecting";
+  status: Status.CONNECTING;
 };
 
 type MetaMaskConnected = {
   account: string;
   chainId: string;
-  status: "connected";
+  status: Status.CONNECTED;
 };
 
 export type MetaMaskState =

@@ -1,4 +1,5 @@
 import { MetaMaskState } from "./metamask-context";
+import { Status } from "./constants";
 
 type MetaMaskUnavailable = {
   type: "metaMaskUnavailable";
@@ -46,23 +47,26 @@ export function reducer(state: MetaMaskState, action: Action): MetaMaskState {
       return {
         chainId: null,
         account: null,
-        status: "unavailable",
+        status: Status.UNAVAILABLE,
       };
     case "metaMaskNotConnected":
       return {
         chainId: action.payload.chainId,
         account: null,
-        status: "notConnected",
+        status: Status.NOT_CONNECTED,
       };
     case "metaMaskConnected":
       const unlockedAccounts = action.payload.accounts;
       return {
         chainId: action.payload.chainId,
         account: unlockedAccounts[0],
-        status: "connected",
+        status: Status.CONNECTED,
       };
     case "metaMaskConnecting":
-      if (state.status === "initializing" || state.status === "unavailable") {
+      if (
+        state.status === Status.INITIALIZING ||
+        state.status === Status.UNAVAILABLE
+      ) {
         console.warn(
           `Invalid state transition from "${state.status}" to "connecting". Please, file an issue.`
         );
@@ -71,10 +75,13 @@ export function reducer(state: MetaMaskState, action: Action): MetaMaskState {
       return {
         ...state,
         account: null,
-        status: "connecting",
+        status: Status.CONNECTING,
       };
     case "metaMaskPermissionRejected":
-      if (state.status === "initializing" || state.status === "unavailable") {
+      if (
+        state.status === Status.INITIALIZING ||
+        state.status === Status.UNAVAILABLE
+      ) {
         console.warn(
           `Invalid state transition from "${state.status}" to "connecting". Please, file an issue.`
         );
@@ -83,10 +90,10 @@ export function reducer(state: MetaMaskState, action: Action): MetaMaskState {
       return {
         ...state,
         account: null,
-        status: "notConnected",
+        status: Status.NOT_CONNECTED,
       };
     case "metaMaskAccountsChanged":
-      if (state.status !== "connected") {
+      if (state.status !== Status.CONNECTED) {
         console.warn(
           `Invalid accounts change in "${state.status}". Please, file an issue.`
         );
@@ -97,7 +104,7 @@ export function reducer(state: MetaMaskState, action: Action): MetaMaskState {
         return {
           ...state,
           account: null,
-          status: "notConnected",
+          status: Status.NOT_CONNECTED,
         };
       }
       return {
@@ -105,7 +112,10 @@ export function reducer(state: MetaMaskState, action: Action): MetaMaskState {
         account: accounts[0],
       };
     case "metaMaskChainChanged":
-      if (state.status === "initializing" || state.status === "unavailable") {
+      if (
+        state.status === Status.INITIALIZING ||
+        state.status === Status.UNAVAILABLE
+      ) {
         console.warn(
           `Invalid chain ID change in "${state.status}". Please, file an issue.`
         );

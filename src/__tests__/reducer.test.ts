@@ -1,5 +1,6 @@
 import { MetaMaskState } from "../metamask-context";
 import { reducer } from "../reducer";
+import { Status } from "../constants";
 
 describe("state reducer, edge cases", () => {
   test('transition from "initializing" to "connecting" is not allowed', () => {
@@ -7,7 +8,7 @@ describe("state reducer, edge cases", () => {
     const initialState: MetaMaskState = {
       account: null,
       chainId: null,
-      status: "initializing",
+      status: Status.INITIALIZING,
     };
     const state = reducer(initialState, { type: "metaMaskConnecting" });
     expect(initialState).toEqual(state);
@@ -17,7 +18,7 @@ describe("state reducer, edge cases", () => {
     const initialState: MetaMaskState = {
       account: null,
       chainId: null,
-      status: "unavailable",
+      status: Status.UNAVAILABLE,
     };
     const state = reducer(initialState, { type: "metaMaskConnecting" });
     expect(initialState).toEqual(state);
@@ -28,7 +29,7 @@ describe("state reducer, edge cases", () => {
     const initialState: MetaMaskState = {
       account: null,
       chainId: null,
-      status: "initializing",
+      status: Status.INITIALIZING,
     };
     const state = reducer(initialState, { type: "metaMaskPermissionRejected" });
     expect(initialState).toEqual(state);
@@ -38,7 +39,7 @@ describe("state reducer, edge cases", () => {
     const initialState: MetaMaskState = {
       account: null,
       chainId: null,
-      status: "unavailable",
+      status: Status.UNAVAILABLE,
     };
     const state = reducer(initialState, { type: "metaMaskPermissionRejected" });
     expect(initialState).toEqual(state);
@@ -48,7 +49,7 @@ describe("state reducer, edge cases", () => {
     const initialState: MetaMaskState = {
       account: null,
       chainId: null,
-      status: "unavailable",
+      status: Status.UNAVAILABLE,
     };
     const state = reducer(initialState, {
       type: "metaMaskAccountsChanged",
@@ -61,7 +62,7 @@ describe("state reducer, edge cases", () => {
     const initialState: MetaMaskState = {
       account: null,
       chainId: null,
-      status: "initializing",
+      status: Status.INITIALIZING,
     };
     const state = reducer(initialState, {
       type: "metaMaskChainChanged",
@@ -74,7 +75,7 @@ describe("state reducer, edge cases", () => {
     const initialState: MetaMaskState = {
       account: null,
       chainId: null,
-      status: "unavailable",
+      status: Status.UNAVAILABLE,
     };
     const state = reducer(initialState, {
       type: "metaMaskChainChanged",

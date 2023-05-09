@@ -7,6 +7,7 @@ import {
 } from "./metamask-context";
 import { Action, reducer } from "./reducer";
 import { useSafeDispatch } from "./utils/useSafeDispatch";
+import { Status } from "./constants";
 
 type ErrorWithCode = {
   code: number;
@@ -203,7 +204,7 @@ async function switchEthereumChain(chainId: string) {
 }
 
 const initialState: MetaMaskState = {
-  status: "initializing",
+  status: Status.INITIALIZING,
   account: null,
   chainId: null,
 };
@@ -214,28 +215,29 @@ export function MetaMaskProvider(props: any) {
 
   const { status } = state;
 
-  const isInitializing = status === "initializing";
+  const isInitializing = status === Status.INITIALIZING;
   React.useEffect(() => {
     if (isInitializing) {
       synchronize(dispatch);
     }
   }, [dispatch, isInitializing]);
 
-  const isConnected = status === "connected";
+  const isConnected = status === Status.CONNECTED;
   React.useEffect(() => {
     if (!isConnected) return () => {};
     const unsubscribe = subsribeToAccountsChanged(dispatch);
     return unsubscribe;
   }, [dispatch, isConnected]);
 
-  const isAvailable = status !== "unavailable" && status !== "initializing";
+  const isAvailable =
+    status !== Status.UNAVAILABLE && status !== Status.INITIALIZING;
   React.useEffect(() => {
     if (!isAvailable) return () => {};
     const unsubscribe = subscribeToChainChanged(dispatch);
     return unsubscribe;
   }, [dispatch, isAvailable]);
 
-  const isAvailableAndNotConnected = status === "notConnected";
+  const isAvailableAndNotConnected = status === Status.NOT_CONNECTED;
   React.useEffect(() => {
     if (!isAvailableAndNotConnected) return () => {};
     const unsubscribe = subscribeToManualConnection(dispatch);
