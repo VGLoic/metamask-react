@@ -81,7 +81,7 @@ export type IMetaMaskContext = MetaMaskState & {
   /**
    * Request a switch of network
    * @dev See [MetaMask API](https://docs.metamask.io/wallet/reference/rpc-api/#wallet_switchethereumchain) or [EIP-3326](https://ethereum-magicians.org/t/eip-3326-wallet-switchethereumchain/5471) for full description
-   * @dev An error with code `4902` will be thrown if the chain has not been added to MetaMask, in this case, use `addChain` first
+   * @dev An error with code `4902` will be thrown if the chain has not been added to MetaMask. In this case, one would need to use the `addChain` method in order to add the chain to MetaMask and switch to it.
    * @param chainId Chain ID of the network in hexadecimal
    * @example ```ts
    * const { addChain } = useMetaMask();
