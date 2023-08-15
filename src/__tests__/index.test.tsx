@@ -6,18 +6,16 @@ import { useMetaMask, MetaMaskProvider } from "../";
 describe("MetaMask provider", () => {
   const addChainPrams = {
     chainId: "0x64",
-    chainName: "xDAI Chain",
-    rpcUrls: ["https://dai.poa.network"],
-    iconUrls: [
-      "https://xdaichain.com/fake/example/url/xdai.svg",
-      "https://xdaichain.com/fake/example/url/xdai.png",
-    ],
+    chainName: "Gnosis",
     nativeCurrency: {
-      name: "xDAI",
-      symbol: "xDAI",
+      name: "xDai",
+      symbol: "XDAI",
       decimals: 18,
     },
+    rpcUrls: ["https://rpc.gnosischain.com/"],
+    blockExplorerUrls: ["https://gnosisscan.io/"],
   };
+
   const address = "0x19F7Fa0a30d5829acBD9B35bA2253a759a37EfC5";
 
   describe("when MetaMask is not available", () => {

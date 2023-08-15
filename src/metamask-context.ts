@@ -57,8 +57,24 @@ export type IMetaMaskContext = MetaMaskState & {
    */
   connect: () => Promise<string[] | null>;
   /**
-   * Request addition of a new network
-   * @param parameters New chain parameters, see [EIP-3085](https://eips.ethereum.org/EIPS/eip-3085) for full description
+   * Request addition of a new chain to MetaMask
+   * @dev See [MetaMask API](https://docs.metamask.io/wallet/reference/rpc-api/#wallet_addethereumchain) or [EIP-3085](https://eips.ethereum.org/EIPS/eip-3085) for full description
+   * @param parameters The chain parameters
+   * @example ```typescript
+   * const { addChain } = useMetaMask();
+   * const GNOSIS_MAINNET_PARAMS = {
+   *  chainId: "0x64",
+   *  chainName: "Gnosis",
+   *  nativeCurrency: {
+   *    name: "xDai",
+   *    symbol: "XDAI",
+   *    decimals: 18,
+   *  },
+   *  rpcUrls: ["https://rpc.gnosischain.com/"],
+   *  blockExplorerUrls: ["https://gnosisscan.io/"],
+   * }
+   * const onClick = () => addChain(GNOSIS_MAINNET_PARAMS);
+   * ```
    */
   addChain: (parameters: AddEthereumChainParameter) => Promise<void>;
   /**
