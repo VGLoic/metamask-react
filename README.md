@@ -99,14 +99,14 @@ function WrongNetwork() {
   const { addChain } = useMetaMask();
   const gnosisChainNetworkParams = {
     chainId: "0x64",
-    chainName: "Gnosis Chain",
-    rpcUrls: ["https://rpc.gnosischain.com/"],
+    chainName: "Gnosis",
     nativeCurrency: {
-      name: "xDAI",
-      symbol: "xDAI",
-      decimals: 18,
+        name: "xDai",
+        symbol: "XDAI",
+        decimals: 18,
     },
-    blockExplorerUrls: ["https://blockscout.com/xdai/mainnet/"]
+    rpcUrls: ["https://rpc.gnosischain.com/"],
+    blockExplorerUrls: ["https://gnosisscan.io/"],
   };
   // Request to add Gnosis chain and then switch to it
   return (
