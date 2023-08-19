@@ -6,7 +6,7 @@ Simplistic Context provider and consumer hook in order to manage MetaMask in the
 
 ## Installation
 
-The recommend way to use MetaMask React with a React app is to install it as a dependency.
+The recommended way to use MetaMask React with a React app is to install it as a dependency.
 
 If you use `npm`:
 ```console
@@ -20,7 +20,7 @@ yarn add metamask-react
 
 ## Quick Start
 
-The first step is to wrap you `App` or any React subtree with the `MetaMaskProvider`
+The first step is to wrap your `App` or any React subtree with the `MetaMaskProvider`
 ```TypeScript
 // index.js
 import { MetaMaskProvider } from "metamask-react";
@@ -61,7 +61,7 @@ function App() {
 }
 ```
 
-## Statuses and behaviour
+## Statuses and behavior
 
 The `MetaMaskProvider` will first initialise the state with `initializing` status, the `account` and `chainId` will be `null`. A synchronization is performed in order to derive the MetaMask state.
 
@@ -80,7 +80,7 @@ Here is an abstract on the different statuses:
 
 ## Chain utils
 
-The context exposes two methods in order to facilitate the management of the networks. These methods are wrappers around the JSON RPC requests handled by MetaMask, see [MetaMask documentation](https://docs.metamask.io/guide/rpc-api.html#table-of-contents) for additonal informations.
+The context exposes two methods in order to facilitate the management of the networks. These methods are wrappers around the JSON RPC requests handled by MetaMask, see [MetaMask documentation](https://docs.metamask.io/guide/rpc-api.html#table-of-contents) for additional information.
 
 The first one is to request a switch to a different network
 ```TypeScript
