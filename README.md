@@ -4,7 +4,7 @@
 
 Simplistic Context provider and consumer hook in order to manage MetaMask in the browser.
 
-> ![WARNING]
+> [!WARNING]
 > This repository is no longer maintained. See below for the recommended alternatives. Thanks to those who has used and contributed to this package.
 
 Recommended alternatives:
