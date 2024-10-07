@@ -4,16 +4,26 @@
 
 Simplistic Context provider and consumer hook in order to manage MetaMask in the browser.
 
+> ![WARNING]
+> This repository is no longer maintained. See below for the recommended alternatives. Thanks to those who has used and contributed to this package.
+
+Recommended alternatives:
+
+- [Official MetaMask SDK](https://docs.metamask.io/wallet/how-to/use-sdk/javascript/react/),
+- [Wagmi](https://wagmi.sh/react/getting-started).
+
 ## Installation
 
 The recommended way to use MetaMask React with a React app is to install it as a dependency.
 
 If you use `npm`:
+
 ```console
 npm install metamask-react
 ```
 
 Or if you use `yarn`:
+
 ```console
 yarn add metamask-react
 ```
@@ -21,6 +31,7 @@ yarn add metamask-react
 ## Quick Start
 
 The first step is to wrap your `App` or any React subtree with the `MetaMaskProvider`
+
 ```TypeScript
 // index.js
 import { MetaMaskProvider } from "metamask-react";
@@ -38,6 +49,7 @@ ReactDOM.render(
 ```
 
 In any React child of the provider, one can use the `useMetaMask` hook in order to access the state and methods.
+
 ```TypeScript
 // app.js
 import { useMetaMask } from "metamask-react";
@@ -72,6 +84,7 @@ Otherwise, a check is performed in order to detect if MetaMask has already conne
 In case of no connected accounts, the status will be `notConnected`, otherwise the status will be `connected`.
 
 Here is an abstract on the different statuses:
+
 - `initializing`: the provider is currently initializing by synchronizing with MetaMask
 - `unavailable`: MetaMask is not available, nothing will be done
 - `notConnected`: MetaMask is available but not connected to the application
@@ -83,6 +96,7 @@ Here is an abstract on the different statuses:
 The context exposes two methods in order to facilitate the management of the networks. These methods are wrappers around the JSON RPC requests handled by MetaMask, see [MetaMask documentation](https://docs.metamask.io/guide/rpc-api.html#table-of-contents) for additional information.
 
 The first one is to request a switch to a different network
+
 ```TypeScript
 function WrongNetwork() {
   const { switchChain } = useMetaMask();
@@ -94,6 +108,7 @@ function WrongNetwork() {
 ```
 
 The second one is a request to add to MetaMask a network and then connect to it
+
 ```TypeScript
 function WrongNetwork() {
   const { addChain } = useMetaMask();
@@ -116,6 +131,7 @@ function WrongNetwork() {
 ```
 
 Finally, here is a non exhaustive list of the networks and their chain IDs
+
 ```TypeScript
 const networks = {
   mainnet: "0x1", // 1
@@ -138,9 +154,11 @@ const networks = {
   fantom: "0xfa" // 250
 }
 ```
+
 ## Type safe hook
 
 Most of the time, the application will use the state when the user is connected, i.e. with status `connected`. Therefore the hook `useConnectedMetaMask` is additionally exposed, it is the same hook as `useMetaMask` but is typed with the connected state, e.g. the `account` or the `chainId` are necessarily not `null`. This hook is only usable when the status is equal to `connected`, it will throw otherwise.
+
 ```TypeScript
 function MyComponent() {
   const {
@@ -153,6 +171,7 @@ function MyComponent() {
   return <div>Connected account {account} on chain ID {chainId}</div>
 }
 ```
+
 ## Contributing :rocket:
 
 Contributions are welcome! Please follow the guidelines in the [contributing document](/CONTRIBUTING.md).
